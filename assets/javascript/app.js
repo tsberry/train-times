@@ -98,6 +98,14 @@ database.ref().on("value", function (snapshot) {
     console.log("The read failed: " + errorObject.code);
 });
 
+setInterval(function() {
+    $("tbody").empty();
+    for (var i = 0; i < trains.length; i++) {
+        console.log(trains[i]);
+        makeRow(trains[i]);
+    }
+}, 60000);
+
 $("#add-train").on("click", function () {
     event.preventDefault();
 
