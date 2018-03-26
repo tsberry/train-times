@@ -32,7 +32,7 @@ function makeRow(train) {
     freqD.text(train.freq);
 
     var nextD = $("<td>");
-    nextD.text(parseTime(nextTrain(train)));
+    nextD.text(getTime(nextTrain(train)));
 
     var minD = $("<td>");
     minD.text(minTillNext(train));
@@ -62,16 +62,27 @@ function minTillNext(train) {
     return nextTrain(train) - currMin;
 }
 
-function parseTime(minutes) {
+function getTime(minutes) {
     var text = "";
     var hours = (Math.floor(minutes / 60));
     var min = minutes - (hours * 60);
-    text = (hours % 24) + ":";
+    if(hours % 12 < 10) {
+        text = "0" + (hours % 12) + ":";
+    }
+    else {
+        text = (hours % 12) + ":";
+    }
     if(min < 10) {
         text += "0" + min;
     }
     else {
         text += min;
+    }
+    if(hours % 24 >= 12) {
+        text += " PM";
+    }
+    else {
+        text += " AM";
     }
     return text;
 }
