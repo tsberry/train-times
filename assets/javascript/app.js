@@ -11,7 +11,7 @@ firebase.initializeApp(config);
 
 var database = firebase.database();
 
-var trains = [];
+var trains;
 
 function Train(n, d, f, fr) {
     this.name = n;
@@ -32,23 +32,56 @@ function makeRow(train) {
     freqD.text(train.freq);
 
     var nextD = $("<td>");
+    nextD.text(parseTime(nextTrain(train)));
 
     var minD = $("<td>");
+    minD.text(minTillNext(train));
 
     row.append(nameD, destD, freqD, nextD, minD);
     $("#train-table").append(row);
 };
 
-var myTrain = new Train("My Train", "Boston", "05:00", "60");
-trains.push(myTrain);
+function nextTrain(train) {
+    var time = train.first.split(":");
+    var hrs = parseInt(time[0]);
+    var min = parseInt(time[1]);
+    min += hrs * 60;
+
+    var curr = new Date();
+    var currMin = curr.getMinutes() + curr.getHours() * 60;
+
+    var diff = currMin - min;
+    var frequency = parseInt(train.freq);
+    var next = currMin + frequency - (diff % frequency);
+    return next;
+}
+
+function minTillNext(train) {
+    var curr = new Date();
+    var currMin = curr.getMinutes() + curr.getHours() * 60;
+    return nextTrain(train) - currMin;
+}
+
+function parseTime(minutes) {
+    var text = "";
+    var hours = (Math.floor(minutes / 60));
+    var min = minutes - (hours * 60);
+    text = (hours % 24) + ":";
+    if(min < 10) {
+        text += "0" + min;
+    }
+    else {
+        text += min;
+    }
+    return text;
+}
 
 database.ref().on("value", function (snapshot) {
-    var arr = snapshot.val().array;
-    console.log(arr);
-    $("#tbody").empty();
-    for (var i = 0; i < arr.length; i++) {
-        console.log(arr[i]);
-        makeRow(arr[i]);
+    trains = snapshot.val().array;
+    $("tbody").empty();
+    for (var i = 0; i < trains.length; i++) {
+        console.log(trains[i]);
+        makeRow(trains[i]);
     }
 }, function (errorObject) {
     console.log("The read failed: " + errorObject.code);
