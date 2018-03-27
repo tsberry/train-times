@@ -39,7 +39,16 @@ function makeRow(train) {
 
     row.append(nameD, destD, freqD, nextD, minD);
     $("#train-table").append(row);
-};
+}
+
+function modulo(num, denom) {
+    if (num % denom >= 0) {
+        return Math.abs(num % denom);
+    }
+    else {
+        return num % denom + denom;
+    }
+}
 
 function nextTrain(train) {
     var time = train.first.split(":");
@@ -52,7 +61,7 @@ function nextTrain(train) {
 
     var diff = currMin - min;
     var frequency = parseInt(train.freq);
-    var next = currMin + frequency - (diff % frequency);
+    var next = currMin + frequency - modulo(diff, frequency);
     return next;
 }
 
@@ -66,19 +75,24 @@ function getTime(minutes) {
     var text = "";
     var hours = (Math.floor(minutes / 60));
     var min = minutes - (hours * 60);
-    if(hours % 12 < 10) {
+    console.log(hours);
+    if ((hours % 24) === 12) {
+        text = "12:";
+    }
+    else if (hours % 12 < 10) {
         text = "0" + (hours % 12) + ":";
+        console.log("hi");
     }
     else {
         text = (hours % 12) + ":";
     }
-    if(min < 10) {
+    if (min < 10) {
         text += "0" + min;
     }
     else {
         text += min;
     }
-    if(hours % 24 >= 12) {
+    if (hours % 24 >= 12) {
         text += " PM";
     }
     else {
@@ -91,17 +105,15 @@ database.ref().on("value", function (snapshot) {
     trains = snapshot.val().array;
     $("tbody").empty();
     for (var i = 0; i < trains.length; i++) {
-        console.log(trains[i]);
         makeRow(trains[i]);
     }
 }, function (errorObject) {
     console.log("The read failed: " + errorObject.code);
 });
 
-setInterval(function() {
+setInterval(function () {
     $("tbody").empty();
     for (var i = 0; i < trains.length; i++) {
-        console.log(trains[i]);
         makeRow(trains[i]);
     }
 }, 60000);
