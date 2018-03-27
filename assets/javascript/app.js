@@ -32,7 +32,7 @@ function makeRow(train) {
     freqD.text(train.freq);
 
     var nextD = $("<td>");
-    nextD.text(getTime(nextTrain(train)));
+    nextD.text(nextTrain(train).format("hh:mm A"));
 
     var minD = $("<td>");
     minD.text(minTillNext(train));
@@ -51,52 +51,22 @@ function modulo(num, denom) {
 }
 
 function nextTrain(train) {
-    var time = train.first.split(":");
-    var hrs = parseInt(time[0]);
-    var min = parseInt(time[1]);
-    min += hrs * 60;
-
-    var curr = new Date();
-    var currMin = curr.getMinutes() + curr.getHours() * 60;
-
-    var diff = currMin - min;
+    var time = moment(train.first, "HH:mm");
+    
+    var curr = moment();
+    var diff = curr.diff(time, "minutes");
     var frequency = parseInt(train.freq);
-    var next = currMin + frequency - modulo(diff, frequency);
+    var next = curr.add(frequency - modulo(diff, frequency), "minutes");
     return next;
 }
 
 function minTillNext(train) {
-    var curr = new Date();
-    var currMin = curr.getMinutes() + curr.getHours() * 60;
-    return nextTrain(train) - currMin;
-}
+    var time = moment(train.first, "HH:mm");
 
-function getTime(minutes) {
-    var text = "";
-    var hours = (Math.floor(minutes / 60));
-    var min = minutes - (hours * 60);
-    if ((hours % 24) === 12) {
-        text = "12:";
-    }
-    else if (hours % 12 < 10) {
-        text = "0" + (hours % 12) + ":";
-    }
-    else {
-        text = (hours % 12) + ":";
-    }
-    if (min < 10) {
-        text += "0" + min;
-    }
-    else {
-        text += min;
-    }
-    if (hours % 24 >= 12) {
-        text += " PM";
-    }
-    else {
-        text += " AM";
-    }
-    return text;
+    var curr = moment();
+    var diff = curr.diff(time, "minutes");
+    var frequency = parseInt(train.freq);
+    return frequency - modulo(diff, frequency);
 }
 
 database.ref().on("child_added", function (snapshot) {
