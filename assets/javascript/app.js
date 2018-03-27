@@ -11,7 +11,7 @@ firebase.initializeApp(config);
 
 var database = firebase.database();
 
-var trains;
+var trains = [];
 
 function Train(n, d, f, fr) {
     this.name = n;
@@ -75,13 +75,11 @@ function getTime(minutes) {
     var text = "";
     var hours = (Math.floor(minutes / 60));
     var min = minutes - (hours * 60);
-    console.log(hours);
     if ((hours % 24) === 12) {
         text = "12:";
     }
     else if (hours % 12 < 10) {
         text = "0" + (hours % 12) + ":";
-        console.log("hi");
     }
     else {
         text = (hours % 12) + ":";
@@ -101,12 +99,10 @@ function getTime(minutes) {
     return text;
 }
 
-database.ref().on("value", function (snapshot) {
-    trains = snapshot.val().array;
-    $("tbody").empty();
-    for (var i = 0; i < trains.length; i++) {
-        makeRow(trains[i]);
-    }
+database.ref().on("child_added", function (snapshot) {
+    train = snapshot.val().train;
+    trains.push(train);
+    makeRow(train);
 }, function (errorObject) {
     console.log("The read failed: " + errorObject.code);
 });
@@ -125,8 +121,7 @@ $("#add-train").on("click", function () {
     var destination = $("#destination-input").val().trim();
     var first = $("#time-input").val().trim();
     var freq = $("#freq-input").val().trim();
-    trains.push(new Train(name, destination, first, freq));
-    database.ref().set({
-        array: trains
+    database.ref().push({
+        train: new Train(name, destination, first, freq)
     });
 });
