@@ -51,20 +51,13 @@ function modulo(num, denom) {
 }
 
 function nextTrain(train) {
-    var time = moment(train.first, "HH:mm");
-    
-    var curr = moment();
-    var diff = curr.diff(time, "minutes");
-    var frequency = parseInt(train.freq);
-    var next = curr.add(frequency - modulo(diff, frequency), "minutes");
+    var next = moment().add(minTillNext(train), "minutes");
     return next;
 }
 
 function minTillNext(train) {
     var time = moment(train.first, "HH:mm");
-
-    var curr = moment();
-    var diff = curr.diff(time, "minutes");
+    var diff = moment().startOf("minute").diff(time, "minutes");
     var frequency = parseInt(train.freq);
     return frequency - modulo(diff, frequency);
 }
